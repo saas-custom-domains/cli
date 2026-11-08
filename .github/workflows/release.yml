@@ -1,9 +1,9 @@
 name: Release
 
-# Publishes to npm when a v* tag is pushed, for example v0.1.1.
-# Uses npm trusted publishing (OIDC): configure this repository and workflow as a trusted publisher
-# for the package on npmjs.com. That's only possible once the package exists, so publish the first
-# version by hand. See AGENTS.md.
+# Stages a new version on npm when a v* tag is pushed, for example v0.1.2. It goes live once a maintainer
+# approves it with 2FA under Staged Packages on npmjs.com (or `npm stage approve <stage-id>`).
+# Uses npm trusted publishing (OIDC) with stage-only permission: configure this repository and workflow as a
+# trusted publisher for the package on npmjs.com, without allowing direct `npm publish`. See AGENTS.md.
 
 on:
   push:
@@ -36,8 +36,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-      # Trusted publishing needs npm 11.5 or newer
+      # Staged publishing needs npm 11.15 or newer
       - run: npm install -g npm@latest
       # Trusted publishing adds provenance automatically
-      - run: npm publish
+      - run: npm stage publish
         if: steps.npm.outputs.published != 'true'

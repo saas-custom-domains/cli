@@ -39,7 +39,9 @@ When you add or change a command, update the README's command table and add a te
 ## Releasing
 
 1. Update `version` in `package.json` and add a section to `CHANGELOG.md`.
-2. Commit, then tag: `git tag v0.1.1 && git push origin main --tags`.
-3. The `release` workflow builds, tests and runs `npm publish --provenance --access public`.
+2. Commit, then tag: `git tag v0.1.2 && git push origin main --tags`.
+3. The `release` workflow builds, tests and runs `npm stage publish`.
+4. A maintainer approves the staged version with 2FA under **Staged Packages** on npmjs.com, or with `npm stage list` and `npm stage approve <stage-id>`. Only then does it go live.
 
-The workflow authenticates with npm trusted publishing (OIDC). Trusted publishing can only be set up for a package that exists, so the very first version is published by hand (`npm login`, then `npm publish --access public`). After that, add this repository and `release.yml` as a trusted publisher in the package settings on npmjs.com.
+The workflow authenticates with npm trusted publishing (OIDC), set up with stage-only permission: direct `npm publish` isn't allowed, so a release always needs a person to approve it. Trusted publishing can only be set up for a package that exists, so the very first version was published by hand. If the workflow runs for a version that's already on npm, it skips publishing.
+
