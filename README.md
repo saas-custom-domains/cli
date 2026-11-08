@@ -127,7 +127,9 @@ Environment variables:
 | `SCD_APP_URL` | App URL used for browser sign-in. Default `https://app.saascustomdomains.com` |
 | `XDG_CONFIG_HOME` | Where the config file goes. Default `~/.config` |
 
-For coding agents, the [skill](https://github.com/saas-custom-domains/skills) teaches the integration (API calls in your app, DNS instructions, webhooks, verifying forwarded requests), and the [MCP server](https://docs.saascustomdomains.com/mcp) at `https://mcp.saascustomdomains.com/mcp` gives chat assistants the same operations as tools.
+In CI and agent sandboxes, run commands without installing anything: `SCD_API_TOKEN=... npx @saas-custom-domains/cli domains list --json`.
+
+For coding agents, the [skill](https://github.com/saas-custom-domains/skills) teaches the integration (API calls in your app, DNS instructions, webhooks, verifying forwarded requests), and the [MCP server](https://docs.saascustomdomains.com/mcp) at `https://mcp.saascustomdomains.com/mcp` gives chat assistants the same operations as tools. Setup for Claude Code, Cursor, Codex, VS Code and other agents: https://saascustomdomains.com/agent-setup
 
 ## Local development with scd-mock
 
@@ -156,7 +158,7 @@ See [AGENTS.md](AGENTS.md) for how the code is organized.
 
 - [API docs](https://docs.saascustomdomains.com) and [OpenAPI spec](https://docs.saascustomdomains.com/openapi.json)
 - [MCP server](https://docs.saascustomdomains.com/mcp)
-- [Agent skill](https://github.com/saas-custom-domains/skills)
+- [Agent skill](https://github.com/saas-custom-domains/skills) and [agent setup guides](https://saascustomdomains.com/agent-setup)
 - [Example apps](https://github.com/saas-custom-domains) for Next.js, Rails, Django, Laravel and more
 
 ## License

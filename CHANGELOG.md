@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2
+
+- The README links to the agent setup guides and shows how to run commands with `npx` in CI and agent sandboxes
+- First release published through GitHub Actions (staged on npm, then approved)
+
 ## 0.1.1
 
 - The npm package is now `@saas-custom-domains/cli`, published by the SaaS Custom Domains organization. It replaces `saascustomdomains`. The commands are still `scd` and `saascustomdomains`.
