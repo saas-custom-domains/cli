@@ -90,6 +90,21 @@ describe("domains", () => {
     expect(questions).toHaveLength(1);
   });
 
+  it("won't delete an upstream that still has custom domains", async () => {
+    await scd(["domains", "add", "app.customer.com"]);
+
+    const refused = await scd(["upstreams", "delete", "app.yourapp.com", "--yes"]);
+    expect(refused.code).toBe(1);
+    expect(refused.stderr).toContain("app.yourapp.com still has 1 custom domain(s)");
+    expect(api.upstreams).toHaveLength(1);
+    expect(api.requests.some((r) => r.method === "DELETE")).toBe(false);
+
+    await scd(["domains", "delete", "app.customer.com", "--yes"]);
+    const deleted = await scd(["upstreams", "delete", "app.yourapp.com", "--yes"]);
+    expect(deleted.code).toBe(0);
+    expect(api.upstreams).toHaveLength(0);
+  });
+
   it("exits 5 with a hint when the domain doesn't exist", async () => {
     const human = await scd(["domains", "get", "nope.com"]);
     expect(human.code).toBe(5);

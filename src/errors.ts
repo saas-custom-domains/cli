@@ -55,8 +55,6 @@ export function messageFor(error: unknown): string {
         return `${error.message}. Check your connection, or SCD_API_URL if you set it.`;
       case 401:
         return `Your API token is invalid or was deleted. Run \`scd auth login\`, or set SCD_API_TOKEN to a token from ${API_TOKENS_URL}.`;
-      case 402:
-        return `${error.message} Creating upstreams, custom domains and redirects needs an active subscription.`;
       case 403:
         if (error.path.startsWith("/analytics/")) {
           return "This domain's account doesn't have the Domain Analytics add-on. Contact support to enable it.";

@@ -117,6 +117,17 @@ export async function startFakeApi() {
       const upstream = upstreams.find((x) => x.uuid === u);
       return upstream ? { body: upstream } : { status: 404, body: { error: "Upstream not found." } };
     }),
+    "DELETE /api/v1/accounts/:a/upstreams/:u": authed((_req, [, u]) => {
+      const index = upstreams.findIndex((x) => x.uuid === u);
+      if (index < 0) return { status: 404 };
+      const [removed] = upstreams.splice(index, 1);
+      return { body: { message: `Upstream ${removed!.host} deleted.` } };
+    }),
+    "GET /api/v1/accounts/:a/upstreams/:u/custom_domains": authed((req, [, u]) => {
+      const all = domains.filter((d) => d.upstream_uuid === u);
+      const perPage = Number(req.query.per_page ?? 25);
+      return { body: { data: all.slice(0, perPage), pagination: { page: 1, count: all.length } } };
+    }),
     "POST /api/v1/accounts/:a/upstreams/:u/custom_domains": authed((req, [a, u]) => {
       const { host } = req.body as { host: string };
       if (domains.some((d) => d.host === host)) return { status: 400, body: { error: "Host has already been taken", error_code: "host_taken" } };
@@ -155,5 +166,5 @@ export async function startFakeApi() {
     "GET /api/v1/rate_limited": authed(() => ({ status: 429, headers: { "Retry-After": "17" } })),
   });
 
-  return { ...server, domains, env: { SCD_API_URL: `${server.url}/api/v1`, SCD_API_TOKEN: TOKEN, XDG_CONFIG_HOME: "/nonexistent-scd-test" } };
+  return { ...server, domains, upstreams, env: { SCD_API_URL: `${server.url}/api/v1`, SCD_API_TOKEN: TOKEN, XDG_CONFIG_HOME: "/nonexistent-scd-test" } };
 }

@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 
 import { findUpstream, normalizeHost, resolveAccount, seg, upstreamPath } from "../api/lookups.js";
-import type { Account, Message, Upstream } from "../api/types.js";
+import type { Account, CustomDomain, Message, Page, Upstream } from "../api/types.js";
 import { date } from "../output.js";
 import type { Runtime } from "../runtime.js";
 import { fetchPage, type PagingOptions, pagingNote, positiveInt, withPaging } from "./shared.js";
@@ -94,6 +94,13 @@ export function registerUpstreams(program: Command, rt: Runtime) {
       const out = rt.out(cmd);
       const api = rt.api(cmd);
       const upstream = await findUpstream(api, host, rt.globals(cmd).account);
+      // The API deletes an upstream's custom domains along with it, so refuse while it still has any
+      const { pagination } = await api.get<Page<CustomDomain>>(`${upstreamPath(upstream)}/custom_domains`, { per_page: 1 });
+      if (pagination.count > 0) {
+        throw new Error(
+          `${upstream.host} still has ${pagination.count} custom domain(s), and deleting it would delete them too. Delete them first: run \`scd domains list --upstream ${upstream.host}\` to see them.`,
+        );
+      }
       await rt.confirm(cmd, `Delete upstream ${upstream.host}?`);
 
       const result = await api.delete<Message>(upstreamPath(upstream));
