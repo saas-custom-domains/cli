@@ -31,4 +31,5 @@ jobs:
       - run: npm run build
       # Trusted publishing needs npm 11.5 or newer
       - run: npm install -g npm@latest
-      - run: npm publish --provenance --access public
+      # Trusted publishing adds provenance automatically
+      - run: npm publish

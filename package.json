@@ -1,6 +1,6 @@
 {
   "name": "saascustomdomains",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Command line interface for SaaS Custom Domains: add custom domains with automatic SSL for your SaaS customers, check their DNS and see traffic.",
   "keywords": [
     "custom-domains",
@@ -12,7 +12,7 @@
     "cli",
     "saascustomdomains"
   ],
-  "homepage": "https://docs.saascustomdomains.com",
+  "homepage": "https://saascustomdomains.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/saas-custom-domains/cli.git"

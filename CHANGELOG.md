@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+- The package homepage is https://saascustomdomains.com
+- The README shows how to run it with `npx` and install it from npm
+- Releases are published from GitHub Actions with npm trusted publishing
+
 ## 0.1.0
 
 First release.
