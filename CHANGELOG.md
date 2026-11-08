@@ -2,6 +2,7 @@
 
 ## 0.1.1
 
+- The npm package is now `@saas-custom-domains/cli`, published by the SaaS Custom Domains organization. It replaces `saascustomdomains`. The commands are still `scd` and `saascustomdomains`.
 - The package homepage is https://saascustomdomains.com
 - The README shows how to run it with `npx` and install it from npm
 - Releases are published from GitHub Actions with npm trusted publishing

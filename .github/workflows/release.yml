@@ -25,6 +25,13 @@ jobs:
           cache: npm
       - name: Check the tag matches package.json
         run: test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
+      # Lets a tag mark a version that was published by hand, such as a package's first version
+      - name: Check whether this version is already on npm
+        id: npm
+        run: |
+          if npm view "$(node -p 'const p = require("./package.json"); p.name + "@" + p.version')" version > /dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          fi
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
@@ -33,3 +40,4 @@ jobs:
       - run: npm install -g npm@latest
       # Trusted publishing adds provenance automatically
       - run: npm publish
+        if: steps.npm.outputs.published != 'true'

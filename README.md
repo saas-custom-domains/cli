@@ -19,13 +19,13 @@ Check progress with `scd domains get app.customer.com`.
 The CLI needs Node.js 20 or newer. Run any command without installing:
 
 ```sh
-npx saascustomdomains <command>
+npx @saas-custom-domains/cli <command>
 ```
 
 Or install it, which puts `scd` and `saascustomdomains` on your PATH:
 
 ```sh
-npm install -g saascustomdomains
+npm install -g @saas-custom-domains/cli
 ```
 
 To build it from source:
