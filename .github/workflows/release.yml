@@ -1,0 +1,34 @@
+name: Release
+
+# Publishes to npm when a v* tag is pushed, for example v0.1.1.
+# Uses npm trusted publishing (OIDC): configure this repository and workflow as a trusted publisher
+# for the package on npmjs.com. That's only possible once the package exists, so publish the first
+# version by hand. See AGENTS.md.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: npm
+      - name: Check the tag matches package.json
+        run: test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      # Trusted publishing needs npm 11.5 or newer
+      - run: npm install -g npm@latest
+      - run: npm publish --provenance --access public

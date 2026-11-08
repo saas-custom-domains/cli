@@ -1,0 +1,49 @@
+{
+  "name": "saascustomdomains",
+  "version": "0.1.0",
+  "description": "Command line interface for SaaS Custom Domains: add custom domains with automatic SSL for your SaaS customers, check their DNS and see traffic.",
+  "keywords": [
+    "custom-domains",
+    "saas",
+    "ssl",
+    "tls",
+    "dns",
+    "multi-tenant",
+    "cli",
+    "saascustomdomains"
+  ],
+  "homepage": "https://docs.saascustomdomains.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saas-custom-domains/cli.git"
+  },
+  "bugs": "https://github.com/saas-custom-domains/cli/issues",
+  "license": "MIT",
+  "author": "SaaS Custom Domains (https://saascustomdomains.com)",
+  "type": "module",
+  "bin": {
+    "saascustomdomains": "dist/cli.js",
+    "scd": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "commander": "^14.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}
