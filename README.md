@@ -152,7 +152,7 @@ npm run typecheck
 npm run build       # compiles src/ to dist/
 ```
 
-See [AGENTS.md](AGENTS.md) for how the code is organized.
+See [AGENTS.md](AGENTS.md) for how the code is organized and how releases work: push a `vX.Y.Z` tag, GitHub Actions stages the version on npm, and a maintainer approves it.
 
 ## Links
 
