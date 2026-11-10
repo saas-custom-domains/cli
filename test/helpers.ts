@@ -94,11 +94,12 @@ export async function startServer(routes: Record<string, Handler>): Promise<Fake
 
 const page = <T>(data: T[]) => ({ data, pagination: { page: 1, count: data.length } });
 
-// An in-memory slice of the API: one account, one upstream, custom domains
+// An in-memory slice of the API: one account, one upstream, custom domains and certificates
 export async function startFakeApi() {
   const accounts = [{ uuid: "acc_1", name: "Acme", personal: false }];
   const upstreams = [{ uuid: "upstream_1", host: "app.yourapp.com", port: 443, tls: true, auth_token: "secret", account_uuid: "acc_1", created_at: "2026-11-01T00:00:00Z" }];
   const domains: Record<string, unknown>[] = [];
+  const certificates: Record<string, unknown>[] = [];
   let nextId = 1;
 
   const authed = (handler: Handler): Handler => (req, params) =>
@@ -162,9 +163,28 @@ export async function startFakeApi() {
       const [removed] = domains.splice(index, 1);
       return { body: { message: `Custom domain ${removed!.host} deleted.` } };
     }),
+    "POST /api/v1/accounts/:a/custom_certificates": authed((req) => {
+      const { private_key } = req.body as { certificate: string; private_key: string };
+      if (!private_key.includes("PRIVATE KEY")) return { status: 400, body: { error: "Private key is invalid: Could not parse PKey", error_code: "private_key_invalid" } };
+      const certificate = {
+        uuid: `cert_${nextId++}`,
+        subject: "/CN=app.customer.com",
+        sans: ["app.customer.com", "www.app.customer.com"],
+        issuer: "/C=US/O=DigiCert Inc/CN=DigiCert Global G2 TLS RSA SHA256 2020 CA1",
+        expires_at: "2027-03-01T00:00:00Z",
+      };
+      certificates.push(certificate);
+      return { status: 201, body: certificate };
+    }),
+    "DELETE /api/v1/accounts/:a/custom_certificates/:c": authed((_req, [, c]) => {
+      const index = certificates.findIndex((x) => x.uuid === c);
+      if (index < 0) return { status: 404, body: { error: `Custom Certificate ${c} not found.`, error_code: "not_found" } };
+      certificates.splice(index, 1);
+      return { body: { message: `Custom Certificate ${c} deleted.` } };
+    }),
     "GET /api/v1/analytics/custom_domains/:d/proxy_summary": authed(() => ({ status: 403, body: { error: "Forbidden" } })),
     "GET /api/v1/rate_limited": authed(() => ({ status: 429, headers: { "Retry-After": "17" } })),
   });
 
-  return { ...server, domains, upstreams, env: { SCD_API_URL: `${server.url}/api/v1`, SCD_API_TOKEN: TOKEN, XDG_CONFIG_HOME: "/nonexistent-scd-test" } };
+  return { ...server, domains, upstreams, certificates, env: { SCD_API_URL: `${server.url}/api/v1`, SCD_API_TOKEN: TOKEN, XDG_CONFIG_HOME: "/nonexistent-scd-test" } };
 }
