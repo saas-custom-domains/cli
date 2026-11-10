@@ -2,9 +2,9 @@ import type { Command } from "commander";
 
 import { resolveAccount, rulesPath, seg } from "../api/lookups.js";
 import type { CustomCertificate, Message, Rule } from "../api/types.js";
-import { parseData } from "../data.js";
+import { parseData, readTextFile } from "../data.js";
 import { CliError, ExitCode } from "../errors.js";
-import { date } from "../output.js";
+import { date, type Output } from "../output.js";
 import type { Runtime } from "../runtime.js";
 import { fetchPage, type PagingOptions, pagingNote, withPaging } from "./shared.js";
 
@@ -91,7 +91,7 @@ Example: allow 10 POST /login requests a minute per IP on every domain of an ups
 }
 
 export function registerCertificates(program: Command, rt: Runtime) {
-  const certificates = program.command("certificates").description("Manage TLS certificates uploaded in the dashboard");
+  const certificates = program.command("certificates").description("Manage the custom TLS certificates you upload");
 
   withPaging(certificates.command("list").description("List an account's uploaded certificates")).action(async (opts: PagingOptions, cmd: Command) => {
     const out = rt.out(cmd);
@@ -109,6 +109,32 @@ export function registerCertificates(program: Command, rt: Runtime) {
   });
 
   certificates
+    .command("create")
+    .description("Upload a certificate and its private key")
+    .requiredOption("--cert <file>", "PEM certificate followed by its intermediate certificates, for example fullchain.pem")
+    .requiredOption("--key <file>", "PEM private key (RSA or ECDSA), without a passphrase")
+    .addHelpText(
+      "after",
+      `
+The proxy serves the certificate for the names it covers. To renew, upload the new
+certificate, then delete the old one with \`scd certificates delete <uuid>\`.
+
+Example:
+  scd certificates create --cert fullchain.pem --key privkey.pem`,
+    )
+    .action(async (opts: { cert: string; key: string }, cmd: Command) => {
+      const out = rt.out(cmd);
+      const body = { certificate: readTextFile(opts.cert), private_key: readTextFile(opts.key) };
+      const api = rt.api(cmd);
+      const account = await resolveAccount(api, rt.globals(cmd).account);
+      const result = await api.post<CustomCertificate>(`/accounts/${seg(account.uuid)}/custom_certificates`, body);
+
+      if (out.json) return out.printJson(result);
+      out.print("Uploaded the certificate.\n");
+      printCertificate(out, result);
+    });
+
+  certificates
     .command("delete")
     .description("Delete an uploaded certificate")
     .argument("<certificate-uuid>", "UUID of the certificate, from `scd certificates list`")
@@ -122,4 +148,14 @@ export function registerCertificates(program: Command, rt: Runtime) {
       if (out.json) out.printJson(result);
       else out.print(`Deleted certificate ${uuid}.`);
     });
+}
+
+function printCertificate(out: Output, c: CustomCertificate) {
+  out.fields([
+    ["Names", c.sans],
+    ["Subject", c.subject],
+    ["Issuer", c.issuer],
+    ["Expires", date(c.expires_at)],
+    ["UUID", c.uuid],
+  ]);
 }

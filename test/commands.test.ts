@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -121,6 +121,59 @@ describe("domains", () => {
 
     expect(again.code).toBe(1);
     expect(JSON.parse(again.stderr)).toEqual({ error: { status: 400, message: "Host has already been taken (host_taken)" } });
+  });
+});
+
+describe("certificates", () => {
+  const CERT = "-----BEGIN CERTIFICATE-----\nleaf\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\nintermediate\n-----END CERTIFICATE-----\n";
+  const KEY = "-----BEGIN PRIVATE KEY-----\nsecret\n-----END PRIVATE KEY-----\n";
+
+  function pemFiles(key = KEY) {
+    const dir = mkdtempSync(join(tmpdir(), "scd-"));
+    writeFileSync(join(dir, "fullchain.pem"), CERT);
+    writeFileSync(join(dir, "privkey.pem"), key);
+    return { cert: join(dir, "fullchain.pem"), key: join(dir, "privkey.pem") };
+  }
+
+  it("uploads a certificate and its private key from files", async () => {
+    const files = pemFiles();
+    const { code, stdout, stderr } = await scd(["certificates", "create", "--cert", files.cert, "--key", files.key]);
+
+    expect(code).toBe(0);
+    expect(stdout).toContain("Uploaded the certificate.");
+    expect(stdout).toMatch(/Names:\s+app\.customer\.com, www\.app\.customer\.com/);
+    expect(stdout).toMatch(/UUID:\s+cert_1/);
+    expect(stdout + stderr).not.toContain("secret");
+    const create = api.requests.find((r) => r.method === "POST")!;
+    expect(create.path).toBe("/api/v1/accounts/acc_1/custom_certificates");
+    expect(create.body).toEqual({ certificate: CERT, private_key: KEY });
+  });
+
+  it("exits 2 without calling the API when a file can't be read", async () => {
+    const files = pemFiles();
+    const result = await scd(["certificates", "create", "--cert", files.cert, "--key", "/nonexistent/privkey.pem"]);
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("Couldn't read /nonexistent/privkey.pem");
+    expect(api.requests).toHaveLength(0);
+  });
+
+  it("reports why the API rejected the certificate", async () => {
+    const files = pemFiles("not a key");
+    const result = await scd(["certificates", "create", "--cert", files.cert, "--key", files.key, "--json"]);
+
+    expect(result.code).toBe(1);
+    expect(JSON.parse(result.stderr)).toEqual({ error: { status: 400, message: "Private key is invalid: Could not parse PKey (private_key_invalid)" } });
+  });
+
+  it("deletes a certificate with --yes", async () => {
+    const files = pemFiles();
+    await scd(["certificates", "create", "--cert", files.cert, "--key", files.key]);
+
+    const deleted = await scd(["certificates", "delete", "cert_1", "--yes"]);
+    expect(deleted.code).toBe(0);
+    expect(deleted.stdout).toContain("Deleted certificate cert_1.");
+    expect(api.certificates).toHaveLength(0);
   });
 });
 

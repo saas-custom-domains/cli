@@ -82,7 +82,7 @@ Commands take hostnames rather than UUIDs. If you have more than one account, pa
 | `scd domains verify \| dns-records \| purge-cache` | Check DNS now, show the DNS records a domain needs, purge its HTTP cache |
 | `scd redirects list \| get \| create \| update \| delete` | Manage domain redirects, for example `old-brand.com` → `https://newbrand.com` |
 | `scd rules list \| create \| delete` | Manage rules on a domain (`--domain`) or upstream (`--upstream`). `create` takes the rule as JSON with `--data` |
-| `scd certificates list \| delete` | Manage TLS certificates uploaded in the dashboard |
+| `scd certificates list \| create \| delete` | Manage custom TLS certificates. `create` uploads a certificate and its private key from PEM files |
 | `scd analytics <host>` | Requests, data transfer and response codes; `--web` for visitors, pageviews and top pages. Needs the Domain Analytics add-on |
 | `scd api <method> <path>` | Call any API endpoint and print the JSON response |
 | `scd skills install` | Install the [SaaS Custom Domains skill](https://github.com/saas-custom-domains/skills) for your coding agent with `npx skills add` |
