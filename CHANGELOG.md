@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- `scd certificates create --cert fullchain.pem --key privkey.pem` uploads a custom TLS certificate and its private key. Together with `scd certificates delete`, an ACME client's deploy hook can renew an uploaded certificate: upload the new one, then delete the old one.
+
 ## 0.1.2
 
 - The README links to the agent setup guides and shows how to run commands with `npx` in CI and agent sandboxes

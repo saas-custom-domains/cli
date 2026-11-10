@@ -1,6 +1,6 @@
 {
   "name": "@saas-custom-domains/cli",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Command line interface for SaaS Custom Domains: add custom domains with automatic SSL for your SaaS customers, check their DNS and see traffic.",
   "keywords": [
     "custom-domains",
