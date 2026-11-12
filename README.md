@@ -78,7 +78,7 @@ Commands take hostnames rather than UUIDs. If you have more than one account, pa
 | `scd auth login \| logout \| status` | Sign in with the browser or an API token, sign out, show the current user |
 | `scd accounts list` | List your accounts |
 | `scd upstreams list \| get \| create \| delete` | Manage upstreams, the apps your custom domains forward to. `get` shows the auth token your app should check |
-| `scd domains list \| get \| add \| delete` | Manage custom domains. `add` takes `--upstream`, `--redirect-to-www`, `--challenge-type`, `--instructions-recipient` and `--prepend-path` |
+| `scd domains list \| get \| add \| update \| delete` | Manage custom domains. `add` takes `--upstream`, `--redirect-to-www`, `--challenge-type`, `--instructions-recipient` and `--prepend-path`. `update` changes Bubble settings: `--bubble-target-path` and `--meta-title`, `--meta-description`, `--meta-favicon-url`, `--meta-image-url` |
 | `scd domains verify \| dns-records \| purge-cache` | Check DNS now, show the DNS records a domain needs, purge its HTTP cache |
 | `scd redirects list \| get \| create \| update \| delete` | Manage domain redirects, for example `old-brand.com` → `https://newbrand.com` |
 | `scd rules list \| create \| delete` | Manage rules on a domain (`--domain`) or upstream (`--upstream`). `create` takes the rule as JSON with `--data` |

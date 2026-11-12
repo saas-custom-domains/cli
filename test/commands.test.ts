@@ -59,6 +59,59 @@ describe("domains", () => {
     expect(list.stdout).toMatch(/app\.customer\.com\s+pending_check\s+not yet\s+app\.yourapp\.com/);
   });
 
+  it("updates only the Bubble settings that are passed, and shows them", async () => {
+    await scd(["domains", "add", "app.customer.com"]);
+
+    const { code, stdout } = await scd(["domains", "update", "App.Customer.com", "--bubble-target-path", "stores/nike", "--meta-title", "Nike Store"]);
+
+    expect(code).toBe(0);
+    expect(stdout).toContain("Updated app.customer.com.");
+    expect(stdout).toMatch(/Target path:\s+stores\/nike/);
+    expect(stdout).toMatch(/Title:\s+Nike Store/);
+    const update = api.requests.find((r) => r.method === "PATCH")!;
+    expect(update.path).toBe("/api/v1/accounts/acc_1/upstreams/upstream_1/custom_domains/domain_1");
+    expect(update.body).toEqual({ bubble_target_path: "stores/nike", meta_title: "Nike Store" });
+
+    const get = await scd(["domains", "get", "app.customer.com"]);
+    expect(get.stdout).toContain("Bubble settings:");
+    expect(get.stdout).toMatch(/Title:\s+Nike Store/);
+  });
+
+  it("clears a Bubble setting with an empty value and prints JSON", async () => {
+    await scd(["domains", "add", "app.customer.com"]);
+    await scd(["domains", "update", "app.customer.com", "--meta-title", "Nike Store", "--meta-description", "Shoes"]);
+
+    const { code, stdout } = await scd(["domains", "update", "app.customer.com", "--meta-title", "", "--json"]);
+
+    expect(code).toBe(0);
+    expect(api.requests.filter((r) => r.method === "PATCH").at(-1)!.body).toEqual({ meta_title: "" });
+    expect(JSON.parse(stdout)).toMatchObject({ host: "app.customer.com", meta_title: null, meta_description: "Shoes", account_uuid: "acc_1", upstream_host: "app.yourapp.com" });
+  });
+
+  it("exits 2 without calling the API when there's nothing to update", async () => {
+    const result = await scd(["domains", "update", "app.customer.com"]);
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("Nothing to change");
+    expect(api.requests).toHaveLength(0);
+  });
+
+  it("reports why the API rejected an update", async () => {
+    await scd(["domains", "add", "app.customer.com"]);
+
+    const result = await scd(["domains", "update", "app.customer.com", "--meta-image-url", "not a url", "--json"]);
+
+    expect(result.code).toBe(1);
+    expect(JSON.parse(result.stderr)).toEqual({ error: { status: 400, message: "meta_image_url is invalid (meta_image_url_invalid)" } });
+  });
+
+  it("doesn't show Bubble settings for a domain without any", async () => {
+    await scd(["domains", "add", "app.customer.com"]);
+
+    const get = await scd(["domains", "get", "app.customer.com"]);
+    expect(get.stdout).not.toContain("Bubble settings:");
+  });
+
   it("requires --yes to delete without a terminal, and deletes with it", async () => {
     await scd(["domains", "add", "app.customer.com"]);
 
@@ -259,7 +312,7 @@ describe("other commands", () => {
     const tree = JSON.parse(result.stdout);
     const domains = tree.commands.find((c: { name: string }) => c.name === "domains");
 
-    expect(domains.commands.map((c: { name: string }) => c.name)).toEqual(["list", "get", "add", "delete", "verify", "dns-records", "purge-cache"]);
+    expect(domains.commands.map((c: { name: string }) => c.name)).toEqual(["list", "get", "add", "update", "delete", "verify", "dns-records", "purge-cache"]);
     expect(domains.commands.find((c: { name: string }) => c.name === "add").arguments[0]).toMatchObject({ name: "host", required: true });
   });
 
