@@ -249,11 +249,11 @@ describe("auth", () => {
 
     const login = await scd(["auth", "login", "--with-token"], { env: withConfig, readStdin: async () => `${TOKEN}\n` });
     expect(login.code).toBe(0);
-    expect(login.stdout).toContain("Signed in as Test User (user 7)");
+    expect(login.stdout).toContain("Signed in as Test User.");
     expect(JSON.parse(readFileSync(join(configHome, "saascustomdomains", "config.json"), "utf8"))).toEqual({ token: TOKEN });
 
     const status = await scd(["auth", "status", "--json"], { env: withConfig });
-    expect(JSON.parse(status.stdout)).toMatchObject({ user: { id: 7, name: "Test User" }, token_source: "config" });
+    expect(JSON.parse(status.stdout)).toMatchObject({ user: { uuid: "user_7", name: "Test User" }, token_source: "config" });
 
     const logout = await scd(["auth", "logout"], { env: withConfig });
     expect(logout.stdout).toContain("Removed the saved token");

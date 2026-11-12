@@ -42,7 +42,7 @@ Examples:
       writeConfig(rt.configPath, { ...readConfig(rt.configPath), token });
 
       if (out.json) out.printJson({ user, config_path: rt.configPath });
-      else out.print(`Signed in as ${user.name} (user ${user.id}). The token is saved in ${rt.configPath}.`);
+      else out.print(`Signed in as ${user.name}. The token is saved in ${rt.configPath}.`);
       if (rt.deps.env.SCD_API_TOKEN) out.info("Note: SCD_API_TOKEN is set in your environment, and it takes precedence over the saved token.");
     });
 
@@ -82,7 +82,7 @@ Examples:
         return;
       }
       out.fields([
-        ["Signed in as", `${user.name} (user ${user.id})`],
+        ["Signed in as", user.name],
         ["Token from", source],
         ["API", rt.apiUrl],
       ]);

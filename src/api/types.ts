@@ -2,7 +2,6 @@
 // Commands print whole API objects in --json mode, so nothing here filters what users get.
 
 export interface User {
-  id: number;
   name: string;
 }
 

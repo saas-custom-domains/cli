@@ -108,7 +108,7 @@ export async function startFakeApi() {
   const findDomain = (uuid: string) => domains.find((d) => d.uuid === uuid);
 
   const server = await startServer({
-    "GET /api/v1/me": authed(() => ({ body: { id: 7, name: "Test User", avatar_url: "" } })),
+    "GET /api/v1/me": authed(() => ({ body: { uuid: "user_7", name: "Test User", avatar_url: "" } })),
     "GET /api/v1/accounts": authed(() => ({ body: accounts })),
     "GET /api/v1/custom_domains": authed((req) => ({
       body: page(domains.filter((d) => (!req.query.host || d.host === req.query.host) && (!req.query.status || d.status === req.query.status))),
