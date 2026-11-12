@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5
+
+- `scd auth login` and `scd auth status` no longer show your numeric user ID
+
 ## 0.1.4
 
 - `scd domains update <host>` changes a custom domain's Bubble settings: `--bubble-target-path`, `--meta-title`, `--meta-description`, `--meta-favicon-url` and `--meta-image-url`. Only the options you pass are changed, and `""` clears a setting.
