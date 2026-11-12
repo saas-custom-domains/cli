@@ -104,6 +104,52 @@ export function registerDomains(program: Command, rt: Runtime) {
     );
 
   domains
+    .command("update")
+    .description("Change a custom domain's Bubble settings")
+    .argument("<host>", "The custom domain")
+    .option("--bubble-target-path <path>", "Page of your Bubble app that visitors are routed to, for example stores/nike")
+    .option("--meta-title <title>", "Page title shown in browser tabs, search results and link previews")
+    .option("--meta-description <text>", "Page description shown in search results and link previews")
+    .option("--meta-favicon-url <url>", "URL of the favicon")
+    .option("--meta-image-url <url>", "URL of the social preview image")
+    .addHelpText(
+      "after",
+      `
+Only the settings you pass are changed. Pass "" to clear one. They apply to custom
+domains of a Bubble.io upstream. Nothing else about a custom domain can be changed:
+delete it and add it again instead.
+
+Examples:
+  scd domains update app.customer.com --bubble-target-path stores/nike --meta-title "Nike Store"
+  scd domains update app.customer.com --meta-image-url ""`,
+    )
+    .action(
+      async (
+        host: string,
+        opts: { bubbleTargetPath?: string; metaTitle?: string; metaDescription?: string; metaFaviconUrl?: string; metaImageUrl?: string },
+        cmd: Command,
+      ) => {
+        const out = rt.out(cmd);
+        const body: Record<string, unknown> = {};
+        if (opts.bubbleTargetPath !== undefined) body.bubble_target_path = opts.bubbleTargetPath;
+        if (opts.metaTitle !== undefined) body.meta_title = opts.metaTitle;
+        if (opts.metaDescription !== undefined) body.meta_description = opts.metaDescription;
+        if (opts.metaFaviconUrl !== undefined) body.meta_favicon_url = opts.metaFaviconUrl;
+        if (opts.metaImageUrl !== undefined) body.meta_image_url = opts.metaImageUrl;
+        if (Object.keys(body).length === 0) throw new CliError("Nothing to change. Pass at least one option, for example --meta-title.", ExitCode.Usage);
+
+        const api = rt.api(cmd);
+        const domain = await findCustomDomain(api, host);
+        const updated = await api.patch<CustomDomain>(customDomainPath(domain), body);
+        const result: AccountCustomDomain = { ...updated, account_uuid: domain.account_uuid, upstream_host: domain.upstream_host };
+
+        if (out.json) return out.printJson(result);
+        out.print(`Updated ${result.host}.\n`);
+        printBubbleSettings(out, result);
+      },
+    );
+
+  domains
     .command("delete")
     .description("Delete a custom domain")
     .argument("<host>", "The custom domain")
@@ -206,10 +252,24 @@ function printDomain(out: Output, d: DomainWithRecords) {
     ["Last DNS check", d.last_dns_check_at],
     ["Created", date(d.created_at)],
   ]);
+  if (d.bubble_target_path || d.meta_title || d.meta_description || d.meta_favicon_url || d.meta_image_url) {
+    out.print("\nBubble settings:\n");
+    printBubbleSettings(out, d);
+  }
   if (d.dns_records?.length) {
     out.print("\nDNS records:\n");
     printRecords(out, d.dns_records);
   }
+}
+
+function printBubbleSettings(out: Output, d: CustomDomain) {
+  out.fields([
+    ["Target path", d.bubble_target_path],
+    ["Title", d.meta_title],
+    ["Description", d.meta_description],
+    ["Favicon URL", d.meta_favicon_url],
+    ["Image URL", d.meta_image_url],
+  ]);
 }
 
 function printRecords(out: Output, records: DnsRecord[]) {

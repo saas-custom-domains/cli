@@ -140,6 +140,11 @@ export async function startFakeApi() {
         acme_challenge_dns_record_status: "valid",
         tls_certificate_issued: false,
         redirect_to_www: false,
+        bubble_target_path: null,
+        meta_title: null,
+        meta_description: null,
+        meta_favicon_url: null,
+        meta_image_url: null,
         last_dns_check_at: null,
         upstream_uuid: u,
         account_uuid: a,
@@ -157,6 +162,19 @@ export async function startFakeApi() {
     "POST /api/v1/accounts/:a/upstreams/:u/custom_domains/:d/verify_dns_records": authed((_req, [, , d]) => ({
       body: { host: findDomain(d!)?.host, dns_status: "pending", message: "The DNS records weren't found yet." },
     })),
+    // Like the API: only the Bubble settings change, and "" clears one
+    "PATCH /api/v1/accounts/:a/upstreams/:u/custom_domains/:d": authed((req, [, , d]) => {
+      const domain = findDomain(d!);
+      if (!domain) return { status: 404, body: { error: `Custom domain ${d} not found.`, error_code: "not_found" } };
+      const fields = ["bubble_target_path", "meta_title", "meta_description", "meta_favicon_url", "meta_image_url"];
+      const changes = Object.entries(req.body as Record<string, string>).filter(([key]) => fields.includes(key));
+      for (const [key, value] of changes) {
+        if (key.endsWith("_url") && value && !/^https?:\/\//.test(value)) return { status: 400, body: { error: `${key} is invalid`, error_code: `${key}_invalid` } };
+      }
+      for (const [key, value] of changes) domain[key] = value === "" ? null : value;
+      const { account_uuid, upstream_host, ...updated } = domain;
+      return { body: updated };
+    }),
     "DELETE /api/v1/accounts/:a/upstreams/:u/custom_domains/:d": authed((_req, [, , d]) => {
       const index = domains.findIndex((x) => x.uuid === d);
       if (index < 0) return { status: 404 };

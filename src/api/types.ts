@@ -46,6 +46,11 @@ export interface CustomDomain {
   tls_certificate_issued: boolean;
   redirect_to_www: boolean;
   prepend_path: string | null;
+  bubble_target_path: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  meta_favicon_url: string | null;
+  meta_image_url: string | null;
   last_dns_check_at: string | null;
   upstream_uuid: string;
   created_at: string;
