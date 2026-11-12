@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4
+
+- `scd domains update <host>` changes a custom domain's Bubble settings: `--bubble-target-path`, `--meta-title`, `--meta-description`, `--meta-favicon-url` and `--meta-image-url`. Only the options you pass are changed, and `""` clears a setting.
+- `scd domains get` shows a domain's Bubble settings when it has any
+
 ## 0.1.3
 
 - `scd certificates create --cert fullchain.pem --key privkey.pem` uploads a custom TLS certificate and its private key. Together with `scd certificates delete`, an ACME client's deploy hook can renew an uploaded certificate: upload the new one, then delete the old one.
